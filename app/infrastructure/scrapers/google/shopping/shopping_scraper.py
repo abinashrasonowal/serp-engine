@@ -1,4 +1,3 @@
-import json
 import logging
 from typing import Optional, List, Any
 from playwright.async_api import Page
