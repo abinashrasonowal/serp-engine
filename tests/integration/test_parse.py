@@ -11,8 +11,8 @@ def test_local_parsing():
     
     print(f"Found {len(results)} results:")
     for i, res in enumerate(results[:10], 1):
-        print(f"{i}. {res.get('title', 'N/A')} - {res.get('price', 'N/A')}")
-        print(f"   Link: {res.get('link', 'N/A')}")
+        print(f"{i}. {res.get('title', 'N/A')} - {res.get('price_range', 'N/A')}")
+        print(f"   Link: {res.get('product_link', 'N/A')}")
         
     if not results:
         print("Still no results found. Selectors might still be incorrect.")

@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     PROXY_URL: Optional[str] = None
     HEADLESS: bool = False
     USER_DATA_DIR: str = "user_data"
+    MAX_CARDS_TO_PROCESS: int
     
     class Config:
         env_file = ".env"

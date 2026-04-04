@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import List, Dict, Any
-from app.core.interfaces.scraper import IScraper, IParser
-from app.core.interfaces.browser import IBrowser
-from app.services.browser.playwright import PlaywrightBrowser
-from app.services.scrapers.google_shopping.google_shopping_scraper import GoogleShoppingScraper
-from app.services.parser import GoogleShoppingParser
-from app.services.google_shopping import GoogleShoppingSearch
-from app.services.captcha_solvers.two_captcha import TwoCaptchaSolver
+from app.domain.interfaces.scraper import IScraper, IParser
+from app.domain.interfaces.browser import IBrowser
+from app.infrastructure.browser.playwright_browser import PlaywrightBrowser
+from app.infrastructure.scrapers.google.shopping.shopping_scraper import GoogleShoppingScraper
+from app.infrastructure.scrapers.google.shopping.shopping_parser import GoogleShoppingParser
+from app.application.use_cases.search.search_service import GoogleShoppingSearch
+from app.application.use_cases.search.search_handler import GoogleShoppingSearchHandler
+from app.infrastructure.captcha.two_captcha_solver import TwoCaptchaSolver
 
 router = APIRouter()
 
@@ -26,16 +26,21 @@ def get_search_service(
 ) -> GoogleShoppingSearch:
     return GoogleShoppingSearch(scraper, parser)
 
+def get_search_handler(
+    search_service: GoogleShoppingSearch = Depends(get_search_service)
+) -> GoogleShoppingSearchHandler:
+    return GoogleShoppingSearchHandler(search_service)
+
 @router.get("/search")
 async def search(
     q: str, 
-    search_service: GoogleShoppingSearch = Depends(get_search_service)
+    handler: GoogleShoppingSearchHandler = Depends(get_search_handler)
 ):
     if not q:
         raise HTTPException(status_code=400, detail="Query parameter 'q' is required")
         
     try:
-        results = await search_service.execute(q)
+        results = await handler.handle(q)
         return {"query": q, "results": results}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

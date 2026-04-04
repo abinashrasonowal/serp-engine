@@ -1,6 +1,6 @@
 import asyncio
 from twocaptcha import TwoCaptcha
-from app.core.interfaces.solver import ISolver
+from app.domain.interfaces.captcha_solver import ISolver
 from app.core.config import settings
 
 class TwoCaptchaSolver(ISolver):

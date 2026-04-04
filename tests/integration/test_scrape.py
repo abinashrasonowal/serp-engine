@@ -1,53 +1,68 @@
 import asyncio
+import logging
 import os
 import sys
 
 # Ensure the app directory is in the path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.services.scrapers.google_shopping.google_shopping_scraper import GoogleShoppingScraper
-from app.services.browser.playwright import PlaywrightBrowser
-from app.services.parser import GoogleShoppingParser
-from app.core.interfaces.solver import ISolver
+from app.infrastructure.scrapers.google.shopping.shopping_scraper import GoogleShoppingScraper
+from app.infrastructure.browser.playwright_browser import PlaywrightBrowser
+from app.infrastructure.scrapers.google.shopping.shopping_parser import GoogleShoppingParser
+from app.domain.interfaces.captcha_solver import ISolver
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
 
 class MockSolver(ISolver):
     async def solve(self, site_key: str, url: str) -> str:
-        print(f"Mocking CAPTCHA solve for {url}")
+        logger.info(f"Mocking CAPTCHA solve for {url}")
         return "mocked-token"
 
+
 async def test_induction_search():
-    print("Starting induction search test...")
-    
+    logger.info("Starting induction search test...")
+
     # Inject dependencies properly
     browser = PlaywrightBrowser()
     solver = MockSolver()
     scraper = GoogleShoppingScraper(browser=browser, solver=solver)
     parser = GoogleShoppingParser()
-    
+
     try:
-        query = "induction"
-        print(f"Scraping Google Shopping for: {query}")
-        
-        # We need to run this with playwright
-        html = await scraper.scrape(query)
-        
-        print("Scrape complete. Parsing results...")
-        results = parser.parse(html)
-        
-        print(f"Found {len(results)} results:")
+        query = "cooker"
+        logger.info(f"Scraping Google Shopping for: {query}")
+
+        # Now returns a SearchResult object
+        search_result = await scraper.scrape(query)
+
+        results = search_result.shopping_result
+        logger.info(f"Scrape complete. Found {len(results)} results.")
+
         for i, res in enumerate(results, 1):
-            print(f"{i}. {res.get('title', 'N/A')}")
-            print(f"   Link: {res.get('link', 'N/A')}")
-            
+            logger.info(f"[{i}] {res.title}")
+            logger.info(f"     Position : {res.position}")
+            logger.info(f"     ID       : {res.product_id}")
+            logger.info(f"     Link     : {res.product_link[:50]}...")
+            if res.description != "N/A":
+                logger.info(f"     Desc     : {res.description[:100]}...")
+            else:
+                logger.info("     Desc     : N/A")
+            logger.info(f"     Stores   : {len(res.stores)} found")
+            if res.features:
+                logger.info(f"     Features : {list(res.features.keys())[:5]}")
+
         if not results:
-            print("No results found. Google might be blocking or the selectors changed.")
-            # Let's save the HTML for debugging if no results
-            with open("../../debug_google.html", "w") as f:
-                f.write(html)
-            print("Saved debug_google.html")
-            
+            logger.warning("No results found. Google might be blocking or the selectors changed.")
+
     except Exception as e:
-        print(f"An error occurred during testing: {e}")
+        logger.exception(f"An error occurred during testing: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(test_induction_search())

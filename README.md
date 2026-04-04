@@ -56,14 +56,17 @@ uvicorn app.main:app --reload
 python test_scrape.py
 ```
 
-## Architecture
-- **`app/core/interfaces/`**: Abstract base classes (IScraper, IParser, IBrowser).
-- **`app/services/browser/`**: Generic Playwright automation.
-- **`app/services/scrapers/google_shopping/`**: Specific search logic.
-- **`app/services/google_shopping.py`**: Search orchestrator.
+## Architecture (Clean Architecture)
 
-https://github.com/abinashrasonowal/serp-engine.git
-
-git remote add origin https://github.com/abinashrasonowal/serp-engine.git
-git branch -M main
-git push -u origin main
+- **`app/domain/`**: 
+  - `interfaces/`: Core abstractions (IBrowser, IScraper, IParser, ICaptchaSolver).
+  - `models/`: Domain entities (SearchResult).
+- **`app/application/`**:
+  - `use_cases/`: Business orchestration (GoogleShoppingSearch, GoogleShoppingSearchHandler).
+- **`app/infrastructure/`**:
+  - `browser/`: Playwright implementation.
+  - `captcha/`: 2Captcha implementation.
+  - `scrapers/google/shopping/`: Specific Google Shopping logic (Scraper, Parser, Selectors).
+- **`app/api/`**:
+  - `routes/`: FastAPI endpoints.
+  - `schemas/`: Request/Response schemas.
