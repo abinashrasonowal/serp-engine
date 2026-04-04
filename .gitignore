@@ -1,6 +1,8 @@
+.idea/
 user_data/
 .env
 .venv/
+venv/
 __pycache__/
 *.pyc
 *.log
