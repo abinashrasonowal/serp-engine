@@ -21,19 +21,23 @@ class GoogleShoppingScraper(IScraper):
         self.immersive_extractor = ImmersiveExtractor()
 
     async def scrape(self, query: str) -> SearchResult:
-        async with self.browser.get_session() as context:
-            pages = context.pages
-            page = pages[0] if pages else await self.browser.create_page(context)
-            
-            search_url = GOOGLE_SHOPPING_URL_TEMPLATE.format(query=query)
-            logger.info(f"Navigating to search results: {search_url}")
-            await page.goto(search_url)
-            await self.browser.human_delay(2, 4)
-            
-            await self._handle_captcha(page)
-            
-            results = await self._process_top_cards(page)
-            return SearchResult(query=query, shopping_result=results)
+        try:
+            async with self.browser.get_session() as context:
+                pages = context.pages
+                page = pages[0] if pages else await self.browser.create_page(context)
+                
+                search_url = GOOGLE_SHOPPING_URL_TEMPLATE.format(query=query)
+                logger.info(f"Navigating to search results: {search_url}")
+                await page.goto(search_url)
+                await self.browser.human_delay(2, 4)
+                
+                await self._handle_captcha(page)
+                
+                results = await self._process_top_cards(page)
+                return SearchResult(query=query, shopping_result=results)
+        except Exception as e:
+            logger.exception("Error during scraping execution:", exc_info=True)
+            raise e
 
     async def _handle_captcha(self, page: Page):
         if CAPTCHA_URL_MARKER in page.url or await page.query_selector(CAPTCHA_FORM_SELECTOR):
@@ -43,7 +47,7 @@ class GoogleShoppingScraper(IScraper):
                 logger.info("CAPTCHA solved.")
                 await self.browser.human_delay(2, 3)
             except Exception as e:
-                logger.error("Timeout waiting for CAPTCHA solver.", e)
+                logger.error(f"Timeout waiting for CAPTCHA solver: {e}", exc_info=True)
 
     @staticmethod
     async def _get_cards(page: Page) -> List[Any]:

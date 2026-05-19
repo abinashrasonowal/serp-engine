@@ -7,9 +7,11 @@ class Settings(BaseSettings):
     PROXY_URL: Optional[str] = None
     HEADLESS: bool = False
     USER_DATA_DIR: str = "user_data"
-    MAX_CARDS_TO_PROCESS: int
+    MAX_CARDS_TO_PROCESS: int = 1
     
     class Config:
         env_file = ".env"
+        extra = "ignore"
 
 settings = Settings()
+

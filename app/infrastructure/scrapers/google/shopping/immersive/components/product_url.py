@@ -31,7 +31,7 @@ class ProductLinkExtractor:
                 if share_btn:
                     break
             except Exception as e:
-                logger.info(f"Selector {selector} failed or timed out.", e)
+                logger.info(f"Selector {selector} failed or timed out: {e}")
                 continue
 
         if not share_btn:
@@ -62,7 +62,7 @@ class ProductLinkExtractor:
                 logger.info(f"Expanded URL: {expanded_url[:70]}...")
                 return expanded_url
         except Exception as e:
-            logger.error(f"Error expanding URL {url}", e)
+            logger.error(f"Error expanding URL {url}: {e}", exc_info=True)
             return url
 
     @staticmethod
