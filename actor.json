@@ -1,0 +1,10 @@
+{
+    "actorSpecification": 1,
+    "name": "google-shopping-scraper-api",
+    "title": "Google Shopping Scraper API",
+    "description": "A FastAPI application that scrapes Google Shopping search results using Playwright. Built to be run as an Apify Actor.",
+    "version": "1.0",
+    "environmentVariables": {
+        "HEADLESS": "True"
+    }
+}
